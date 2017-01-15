@@ -1,6 +1,6 @@
 # ExtendedParametricTypes
 
-This module allows deferring the calculation of field types until type parameters are known.
+This module allows deferring the calculation of field types until type parameters are known (see https://github.com/JuliaLang/julia/issues/18466).
 
 __Example__
 

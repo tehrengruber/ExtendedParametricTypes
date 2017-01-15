@@ -147,9 +147,9 @@ macro EPT(expr)
 
     # add pretty printer
     import Base.show
-    #function show{$(parametric_types_expr...), $(additional_parametric_types...)}(io::IO, ::Type{$(type_name){$(parametric_types...), $(additional_parametric_types...)}})
-  #    write(io, $(display_string))
-  #  end
+    function show{$(parametric_types_expr...), $(additional_parametric_types...)}(io::IO, ::Type{$(type_name){$(parametric_types...), $(additional_parametric_types...)}})
+      write(io, $(display_string))
+    end
   end))
   expr
 end

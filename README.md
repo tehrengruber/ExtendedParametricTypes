@@ -4,7 +4,7 @@ This module allows deferring the calculation of field types until type parameter
 
 __Example__
 
-```
+```julia
 using ExtendedParametricTypes
 
 # must be called once in every module it is being used in

@@ -28,5 +28,5 @@ Prototype. Expect things to break.
 
 ## TODO
 
-- Dispatch on EPTs does not work
+- Dispatch on EPTs does not work as one would expect
 - Add some error handling

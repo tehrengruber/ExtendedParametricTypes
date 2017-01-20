@@ -9,8 +9,14 @@ ExtendedParametricTypes.@Initialize
   field::eltype(A)
 end
 
+# test that the type of the `field` field is an Int for @EPT(Bla{Array{Int, 1}}
 @test fieldtype(@EPT(Bla{Array{Int, 1}}), :field) == Int
 
+# test non-type stable EPT expansion
+T = Bla
+@test fieldtype(@EPT(T{Array{Int, 1}}), :field) == Int
+
+# test type stable EPT expansion
 dummy = () -> @EPT(Bla{Array{Int, 1}})(1)
 @inferred dummy()
 

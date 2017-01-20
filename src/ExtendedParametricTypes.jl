@@ -21,28 +21,44 @@ macro Initialize()
 
       # if the expression is not a type decleration it
       if expr.head == :curly
-        parametric_type_generator_map = try
-          # we compile a function that just returns the unparameterized type
-          helper_func = eval(:(() -> $(expr.args[1])))
-          # if we can infer the return type of that function
-          #  and it is a leaf type we are able to get the needed generators
-          unparameterized_type = first(first(Base.return_types(helper_func)).parameters)
-          unparameterized_type.abstract && throw("")
-          parametric_type_generator_map[unparameterized_type]
+        expanded_expr = try
+          try
+            # make a shallow copy of the expression. in case this try block
+            #  fails the catch block will still work on the unmodifed expr
+            expr_copy = copy(expr)
+            # we compile a function that just returns the unparameterized type
+            helper_func = eval(:(() -> $(expr_copy.args[1])))
+            # if we can infer the return type of that function (does not work
+            #  from generated functions) and it is not an abstract type
+            #  we are able to get the needed generators
+            unparameterized_type = first(first(Base.return_types(helper_func)).parameters)
+            unparameterized_type.abstract && throw("")
+            core_args = copy(expr_copy.args[2:end])
+            for parametric_type_generator in parametric_type_generator_map[unparameterized_type]
+              additional_parametric_types_expr = :($(parametric_type_generator)($(core_args...)))
+              push!(expr_copy.args, additional_parametric_types_expr)
+            end
+            expr_copy
+          catch e
+            # if an exception was thrown the generator is feteched after the
+            #  macro was expanded. this however prevents type inference, so whenever
+            #  you can you should avoid that this happens.
+            warn("Could not determine extended parametric type on macro expansion. A type unstable version is used instead.")
+            expr = :(let generators = ExtendedParametricTypes.parametric_type_generator_map[$(expr.args[1])]
+              expanded_additional_parametric_types = Array{DataType, 1}()
+              for generator in generators
+                push!(expanded_additional_parametric_types, generator($(expr.args[2:end]...)))
+              end
+              $(expr.args[1]){$(expr.args[2:end]...), expanded_additional_parametric_types...}
+            end)
+            expr
+          end
         catch e
-          # if an exception was thrown the generator is feteched after the
-          #  macro was expanded. this however prevents type inference, so whenever
-          #  you can you should avoid that this happens.
-          warn("Could not determine extended parametric type on macro expansion. A type unstable version is used instead.")
-          :(ExtendedParametricTypes.parametric_type_generator_map[$(expr.args[1])])
+          info("Exception was thrown during EPT expansion. Please submit a bug report.")
+          rethrow(e)
         end
-        core_args = copy(expr.args[2:end])
-        for parametric_type_generator in parametric_type_generator_map
-          additional_parametric_types_expr = :($(parametric_type_generator)($(core_args...)))
-          push!(expr.args, additional_parametric_types_expr)
-        end
-        #println(esc(expr))
-        return esc(expr)
+        #println(esc(expanded_expr))
+        return esc(expanded_expr)
       end
 
       assert(expr.head == :type)

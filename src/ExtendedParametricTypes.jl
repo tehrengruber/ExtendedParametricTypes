@@ -47,6 +47,10 @@ macro Initialize()
 
       assert(expr.head == :type)
 
+      # the fields may contain other EPTs so we need to expand them to
+      #  determine correctly whether the parametric types occur no trivially
+      expr = macroexpand(expr)
+
       # check that the type declaration has parametric types
       if !(typeof(expr.args[2]) <: Expr)
         error("EPT declaration did not contain any parametric types")

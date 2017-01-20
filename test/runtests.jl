@@ -32,4 +32,11 @@ end
   field::Array{eltype(A), 1}
 end
 
+# nested EPT's
+@EPT type BlaBlub{T}
+  field::@EPT(Bla{Array{T, 1}})
+end
+
+@test fieldtype(@EPT(BlaBlub{Int}), :field) == @EPT(Bla{Array{Int, 1}})
+
 end

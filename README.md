@@ -30,3 +30,4 @@ Prototype. Expect things to break.
 
 - Dispatch on EPTs does not work as one would expect
 - Add some error handling
+- Docstrings for generated types
